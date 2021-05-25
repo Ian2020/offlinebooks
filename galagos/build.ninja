@@ -1,0 +1,51 @@
+# SPDX-FileCopyrightText: 2021 Ian2020, et. al. <https://github.com/Ian2020>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Keep your accounts offline
+#
+# For full copyright information see the AUTHORS file at the top-level
+# directory of this distribution or at
+# [AUTHORS](https://github.com/Ian2020/offlinebooks/AUTHORS.md)
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Affero General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+# details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+# #############################################################################
+# Copybara
+# #############################################################################
+
+rule galagos_copybara
+  command = copybara galagos/copy.bara.sky --folder-dir /usr/src/app
+
+build galagos_update: galagos_copybara
+
+# #############################################################################
+# Reuse Compliance
+# #############################################################################
+
+rule galagos_compliance
+  command = reuse lint
+
+build galagos_compliance: galagos_compliance
+
+# Utility rules for builds to employ
+
+# Sneakily rely on fact skylark and ninja share syntax
+include galagos/local/settings.bara.sky
+
+rule galagos_addheader
+  command = reuse addheader --year ${galagos_copyright_year} $
+                            --copyright="Ian2020, et. al. <https://github.com/Ian2020>" $
+                            --license="${galagos_license}" --template=template_${galagos_license} $
+                            --style ${galagos_style} ${galagos_reuse_explicit_switch} ${in}

@@ -1,0 +1,89 @@
+# SPDX-FileCopyrightText: 2021 Ian2020, et. al. <https://github.com/Ian2020>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Keep your accounts offline
+#
+# For full copyright information see the AUTHORS file at the top-level
+# directory of this distribution or at
+# [AUTHORS](https://github.com/Ian2020/offlinebooks/AUTHORS.md)
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Affero General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+# details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+builddir=build
+twine_repo=testpypi
+include build_config.ninja
+include galagos/build.ninja
+
+build build: phony python_package
+build test: phony $
+  galagos_compliance
+default test
+build update: phony $
+  galagos_update
+build deploy: phony pypi_upload
+
+# Python Package
+
+rule python_package
+  command = python -m build --outdir ${builddir}/dist
+  pool = console
+
+build python_package: phony ${builddir}/dist
+build ${builddir}/dist: python_package $
+                        AUTHORS.md $
+                        CHANGELOG.md $
+                        CODE_OF_CONDUCT.md $
+                        CONTRIBUTING.md $
+                        README.md $
+                        pyproject.toml $
+                        setup.cfg $
+                        offlinebooks/__init__.py $
+                        offlinebooks/main.py
+
+rule pypi_upload
+  command = pushd ${builddir} || exit 1 ; twine upload --repository ${twine_repo} dist/*
+  pool = console
+build pypi_upload: pypi_upload build
+
+# Helper Targets
+
+build _addheaders: phony _addheaders_cc-by-sa_html _addheaders_cc-by-sa_python _addheaders_agpl3_python
+build _addheaders_cc-by-sa_html: galagos_addheader $
+                                 .gitignore $
+                                 AUTHORS.md $
+                                 CHANGELOG.md $
+                                 CONTRIBUTING.md $
+                                 GOVERNANCE.md $
+                                 README.md
+  galagos_license=CC-BY-SA-4.0
+  galagos_style=html
+build _addheaders_cc-by-sa_python: galagos_addheader $
+                                 MANIFEST.in $
+                                 pyproject.toml $
+                                 setup.cfg
+  galagos_license=CC-BY-SA-4.0
+  galagos_style=python
+
+build _addheaders_agpl3_python: galagos_addheader $
+                                build.ninja $
+                                configure $
+                                requirements.txt $
+                                galagos/build.ninja $
+                                galagos/copy.bara.sky $
+                                galagos/local/settings.bara.sky $
+                                offlinebooks/__init__.py $
+                                offlinebooks/main.py
+  galagos_license=AGPL-3.0-or-later
+  galagos_style=python
