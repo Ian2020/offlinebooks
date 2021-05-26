@@ -32,6 +32,84 @@ from xero.auth import OAuth2Credentials
 from xero import Xero
 
 
+Entity = namedtuple("Entity", "id data")
+
+
+class Contacts:
+    def __init__(self, xero):
+        self.name = "contacts"
+        self.fetch = lambda: paged_generator(xero.contacts, "ContactID",
+                                             includeArchived=True)
+
+
+class Journals:
+    def __init__(self, xero):
+        self.name = "journals"
+        self.xero = xero
+
+    def fetch(self):
+        more = True
+        offset = 0
+        while more:
+            items = self.xero.journals.filter(offset=offset)
+            if len(items) == 0:
+                more = False
+            else:
+                for item in items:
+                    yield Entity(item['JournalID'], item)
+                offset = items[-1]['JournalNumber']
+
+
+class Invoices:
+    def __init__(self, xero):
+        self.name = "invoices"
+        self.fetch = lambda: paged_generator(xero.invoices, "InvoiceID")
+
+
+class Accounts:
+    def __init__(self, xero):
+        self.name = "accounts"
+        self.fetch = lambda: all_generator(xero.accounts, "AccountID")
+
+
+class Currencies:
+    def __init__(self, xero):
+        self.name = "currencies"
+        self.fetch = lambda: all_generator(xero.currencies, "Code")
+
+
+class Items:
+    def __init__(self, xero):
+        self.name = "items"
+        self.fetch = lambda: all_generator(xero.items, "ItemID")
+
+
+class Organisations:
+    def __init__(self, xero):
+        self.name = "organisations"
+        self.fetch = lambda: all_generator(xero.organisations,
+                                           "OrganisationID")
+
+
+class TaxRates:
+    def __init__(self, xero):
+        self.name = "taxrates"
+        self.fetch = lambda: all_generator(xero.taxrates, "Name")
+
+
+class Users:
+    def __init__(self, xero):
+        self.name = "users"
+        self.fetch = lambda: all_generator(xero.users, "UserID")
+
+
+class BrandingThemes:
+    def __init__(self, xero):
+        self.name = "brandingthemes"
+        self.fetch = lambda: all_generator(xero.brandingthemes,
+                                           "BrandingThemeID")
+
+
 def get_token():
     return eval(subprocess.run(
         ["/usr/bin/secret-tool",
@@ -62,27 +140,14 @@ def paged_generator(func, id_field, **kwargs):
             more = False
         else:
             for item in items:
-                yield {"ID": item[id_field], "obj": item}
+                yield Entity(item[id_field], item)
             page_no += 1
 
 
 def all_generator(func, id_field):
     items = func.all()
     for item in items:
-        yield {"ID": item[id_field], "obj": item}
-
-
-def journals_generator(xero):
-    more = True
-    offset = 0
-    while more:
-        items = xero.journals.filter(offset=offset)
-        if len(items) == 0:
-            more = False
-        else:
-            for item in items:
-                yield {"ID": item['JournalID'], "obj": item}
-            offset = items[-1]['JournalNumber']
+        yield Entity(item[id_field], item)
 
 
 def get_repo():
@@ -94,12 +159,12 @@ def get_repo():
     return os.path.join(data_home, "offlinebooks")
 
 
-def process_attachment(xero, item, filename):
-    attachments_dir = f"{filename}_attachments"
-    attachmentContainer = xero.invoices.get_attachments(item['ID'])
+def process_attachments(xero, entity, entity_attachments_dir):
+    attachmentContainer = xero.invoices.get_attachments(entity.id)
     for attach in attachmentContainer['Attachments']:
         download = False
-        attach_filename = os.path.join(attachments_dir, attach['FileName'])
+        attach_filename = os.path.join(entity_attachments_dir,
+                                       attach['FileName'])
         if os.path.exists(attach_filename):
             # TODO: This check may not be sufficient if an attachment is
             # updated but the same size as before. We should also check if its
@@ -109,10 +174,10 @@ def process_attachment(xero, item, filename):
         else:
             download = True
         if download:
-            os.makedirs(attachments_dir, exist_ok=True)
+            os.makedirs(entity_attachments_dir, exist_ok=True)
             with open(attach_filename, "wb") as f:
                 # TODO: This does not seem robust, to fetch by filename
-                xero.invoices.get_attachment(item['ID'], attach['FileName'], f)
+                xero.invoices.get_attachment(entity.id, attach['FileName'], f)
 
 
 def main():
@@ -148,49 +213,37 @@ def main():
         if not os.path.isdir(tenant_sym):
             os.symlink(repo_tenantId, tenant_sym)
 
-        Getter = namedtuple("Getter", "name generator")
-        getters = [
-            Getter("contacts",
-                   lambda xero: paged_generator(xero.contacts,
-                                                "ContactID",
-                                                includeArchived=True)),
-            Getter("journals", journals_generator),
-            Getter("invoices",
-                   lambda xero: paged_generator(xero.invoices, "InvoiceID")),
-            Getter("accounts",
-                   lambda xero: all_generator(xero.accounts, "AccountID")),
-            Getter("currencies",
-                   lambda xero: all_generator(xero.currencies, "Code")),
-            Getter("items",
-                   lambda xero: all_generator(xero.items, "ItemID")),
-            Getter("organisations",
-                   lambda xero: all_generator(xero.organisations,
-                                              "OrganisationID")),
-            Getter("taxrates",
-                   lambda xero: all_generator(xero.taxrates, "Name")),
-            Getter("users",
-                   lambda xero: all_generator(xero.users, "UserID")),
-            Getter("brandingthemes",
-                   lambda xero: all_generator(xero.brandingthemes,
-                                              "BrandingThemeID")),
-                  ]
+        fetchers = [Contacts(xero),
+                    Journals(xero),
+                    Invoices(xero),
+                    Accounts(xero),
+                    Currencies(xero),
+                    Items(xero),
+                    Organisations(xero),
+                    TaxRates(xero),
+                    Users(xero),
+                    BrandingThemes(xero),
+                    ]
 
-        for getter in getters:
-            dir = os.path.join(repo_tenantId, getter.name)
-            os.makedirs(dir, exist_ok=True)
+        for fetcher in fetchers:
+            save_dir = os.path.join(repo_tenantId, fetcher.name)
+            os.makedirs(save_dir, exist_ok=True)
 
-            for item in getter.generator(xero):
-                filename = f"{sanitize_filename(item['ID'])}.json"
-                item_path = os.path.join(dir, filename)
-                with open(item_path, "w") as file:
-                    json.dump(item['obj'],
+            for entity in fetcher.fetch():
+                safe_entity_id = sanitize_filename(entity.id)
+                entity_path = os.path.join(
+                                    save_dir, f"{safe_entity_id}.json")
+                entity_attachments_dir = os.path.join(
+                                    save_dir, f"{safe_entity_id}_attachments")
+                with open(entity_path, "w") as file:
+                    json.dump(entity.data,
                               file,
                               indent=4,
                               sort_keys=True,
                               default=str)
-                if 'HasAttachments' in item['obj'] and \
-                   bool(item['obj']['HasAttachments']):
-                    process_attachment(xero, item, item_path)
+                if 'HasAttachments' in entity.data and \
+                   bool(entity.data['HasAttachments']):
+                    process_attachments(xero, entity, entity_attachments_dir)
 
 
 if __name__ == "__main__":

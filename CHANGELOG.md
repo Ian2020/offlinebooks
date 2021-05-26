@@ -24,9 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.2] - 2021-05-26
+
 ### Added
 
-* Attachments are now also saved for which items?
+* Attachments are now saved for invoices, contacts and accounts. These will
+  appear in a dir `[entity ID]_attachments` alongside the entity they pertain to.
 
 ### Changed
 

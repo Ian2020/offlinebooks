@@ -54,9 +54,10 @@ This will install a cmdline tool `offlinebooks`. For usage see below.
 I just wanted a simple way to pull my data from the Xero® API and save it locally
 for backup.
 
-We save each item as JSON in its own file, named by its unique ID (where
+We save each entity as JSON in its own file, named by its unique ID (where
 available) in a simple dir tree structure. This allows for easy processing with
-other tools and is also suitable for source control.
+other tools and is also suitable for source control. If an entity has attachments
+those are saved next to the entity under a dir named `[entity ID]_attachments`
 
 Data is saved separately for each tenant (organisation) under their tenant id
 and under their human-readable tenant name as a symlink for convenience:
@@ -70,18 +71,24 @@ $XDG_DATA_HOME/offlinebooks/
     ├── b3b892ur-02i8-4842-8bx2-85696h032kz2
     │   ├── accounts
     │   │   ├── a6r01id3-690x-7edt-8pd2-c873245y38v7.json
+    │   │   ├── a6r01id3-690x-7edt-8pd2-c873245y38v7_attachments
+    │   │   │   └── ...
     │   │   └── ...
     │   ├── brandingthemes
     │   │   ├── a6r01id3-690x-7edt-8pd2-c873245y38v7.json
     │   │   └── ...
     │   ├── contacts
     │   │   ├── a6r01id3-690x-7edt-8pd2-c873245y38v7.json
+    │   │   ├── a6r01id3-690x-7edt-8pd2-c873245y38v7_attachments
+    │   │   │   └── ...
     │   │   └── ...
     │   ├── currencies
     │   │   ├── GBP.json
     │   │   └── ...
     │   ├── invoices
     │   │   ├── a6r01id3-690x-7edt-8pd2-c873245y38v7.json
+    │   │   ├── a6r01id3-690x-7edt-8pd2-c873245y38v7_attachments
+    │   │   │   └── ...
     │   │   └── ...
     │   ├── items
     │   │   ├── a6r01id3-690x-7edt-8pd2-c873245y38v7.json
@@ -131,7 +138,7 @@ account and grant it permissions:
     the [offlinebooks project page on PyPI](https://pypi.org/project/offlinebooks/)
   * When it gets to adding scopes we need `openid` to authorise the app and
     `offline_access` to refresh our token on expiry. Beyond that
-    we just need read permissions for each item we download. DO NOT ADD ANY
+    we just need read permissions for each entity we download. DO NOT ADD ANY
     WRITE PERMISSIONS, they are not needed. The following should suffice:
 
 ```bash
@@ -169,6 +176,12 @@ containing the downloaded data for you to explore (see above).
   should work.
 * We depend on `secret-tool` to retrieve the token which `xoauth` has saved,
   this is GNOME-specific.
+* I've seen the order of Journal Lines in Journals change even though the data
+  is all the same. This appears as a nuisance difference if using source
+  control. We should sort them ourselves perhaps.
+* Attachments are only re-fetched if they differ in size to avoid large
+  downloads. There's a small chance that an updated attachment which is the same
+  size as the original is not fetched.
 * We do not yet download anything outside of the Accounting API, that leaves
   these APIs untouched:
   * Payroll
@@ -208,6 +221,7 @@ In vague priority order:
 
 * Download remaining data not yet supported from Accounting API above.
 * Allow user to limit tenant(s). Introduce config file in XDG friendly location
+* Allow user to specify repo path also
 * We should report at the end on API usage if requested: 'Each API response you
   receive will include the X-DayLimit-Remaining, X-MinLimit-Remaining and
   X-AppMinLimit-Remaining headers telling you the number of remaining against
@@ -216,7 +230,6 @@ In vague priority order:
   * 60 calls a minute
   * 5 concurrent calls
 * Fetch in parallel
-* Allow user to specify repo path
 * We assume journals start at 1, i.e. setting offset=0 which means querying
   JournalNumber>0. Is this definite?
 
