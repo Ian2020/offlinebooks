@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* Attachments are now also saved for which items?
+
 ### Changed
 
 * Data is now stored in `~/.local/share/offlinebooks` instead of

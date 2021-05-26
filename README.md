@@ -206,7 +206,6 @@ containing the downloaded data for you to explore (see above).
 
 In vague priority order:
 
-* Fetch attachments
 * Download remaining data not yet supported from Accounting API above.
 * Allow user to limit tenant(s). Introduce config file in XDG friendly location
 * We should report at the end on API usage if requested: 'Each API response you

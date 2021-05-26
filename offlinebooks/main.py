@@ -94,6 +94,27 @@ def get_repo():
     return os.path.join(data_home, "offlinebooks")
 
 
+def process_attachment(xero, item, filename):
+    attachments_dir = f"{filename}_attachments"
+    attachmentContainer = xero.invoices.get_attachments(item['ID'])
+    for attach in attachmentContainer['Attachments']:
+        download = False
+        attach_filename = os.path.join(attachments_dir, attach['FileName'])
+        if os.path.exists(attach_filename):
+            # TODO: This check may not be sufficient if an attachment is
+            # updated but the same size as before. We should also check if its
+            # unique ID has changed.
+            if os.path.getsize(attach_filename) != attach['ContentLength']:
+                download = True
+        else:
+            download = True
+        if download:
+            os.makedirs(attachments_dir, exist_ok=True)
+            with open(attach_filename, "wb") as f:
+                # TODO: This does not seem robust, to fetch by filename
+                xero.invoices.get_attachment(item['ID'], attach['FileName'], f)
+
+
 def main():
     client_id = get_client_id()
     token = get_token()
@@ -160,13 +181,16 @@ def main():
 
             for item in getter.generator(xero):
                 filename = f"{sanitize_filename(item['ID'])}.json"
-                with open(os.path.join(dir, filename),
-                          "w") as file:
+                item_path = os.path.join(dir, filename)
+                with open(item_path, "w") as file:
                     json.dump(item['obj'],
                               file,
                               indent=4,
                               sort_keys=True,
                               default=str)
+                if 'HasAttachments' in item['obj'] and \
+                   bool(item['obj']['HasAttachments']):
+                    process_attachment(xero, item, item_path)
 
 
 if __name__ == "__main__":
