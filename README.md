@@ -62,9 +62,9 @@ Data is saved separately for each tenant (organisation) under their tenant id
 and under their human-readable tenant name as a symlink for convenience:
 
 ```text
-~/.offlinebooks/
+$XDG_DATA_HOME/offlinebooks/
 ├── tenantName
-│   ├── Demo Company (UK) -> ~/.offlinebooks/tenantId/b3b892ur-02i8-4842-8bx2-85696h032kz2
+│   ├── Demo Company (UK) -> $XDG_DATA_HOME/offlinebooks/tenantId/b3b892ur-02i8-4842-8bx2-85696h032kz2
 │   └── ...
 └── tenantId
     ├── b3b892ur-02i8-4842-8bx2-85696h032kz2
@@ -127,8 +127,8 @@ account and grant it permissions:
   changes:
   * Use `offlinebooks` as both the 'App name' in Xero and the clientname when
     running `xoauth setup`.
-  * For company or application URL you can put whatever you like or I suggest
-    [offlinebooks project page on PyPI](https://pypi.org/project/offlinebooks/)
+  * For company or application URL you can put whatever you like or can I suggest
+    the [offlinebooks project page on PyPI](https://pypi.org/project/offlinebooks/)
   * When it gets to adding scopes we need `openid` to authorise the app and
     `offline_access` to refresh our token on expiry. Beyond that
     we just need read permissions for each item we download. DO NOT ADD ANY
@@ -147,13 +147,14 @@ xoauth setup add-scope offlinebooks \
   accounting.attachments.read
 ```
 
-* Now you are ready to run offlinebooks:
+* Once you've completed the How To then you are ready to run offlinebooks:
 
 ```bash
 offlinebooks
 ```
 
-If it completes without error you'll find a new dir at `~/.offlinebooks`
+If it completes without error you'll find a new dir at
+`$XDG_DATA_HOME/offlinebooks` (probably `~/.local/share/offlinebooks`)
 containing the downloaded data for you to explore (see above).
 
 ## Troubleshooting
@@ -205,7 +206,6 @@ containing the downloaded data for you to explore (see above).
 
 In vague priority order:
 
-* Move repo to XDG friendly location
 * Fetch attachments
 * Download remaining data not yet supported from Accounting API above.
 * Allow user to limit tenant(s). Introduce config file in XDG friendly location

@@ -85,6 +85,15 @@ def journals_generator(xero):
             offset = items[-1]['JournalNumber']
 
 
+def get_repo():
+    # https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+    if "XDG_DATA_HOME" in os.environ:
+        data_home = os.environ["XDG_DATA_HOME"]
+    else:
+        data_home = os.path.join(os.path.expanduser("~"), ".local", "share")
+    return os.path.join(data_home, "offlinebooks")
+
+
 def main():
     client_id = get_client_id()
     token = get_token()
@@ -102,7 +111,7 @@ def main():
 
     tenants = credentials.get_tenants()
     xero = Xero(credentials)
-    repo = os.path.join(os.path.expanduser("~"), ".offlinebooks")
+    repo = get_repo()
 
     for tenant in tenants:
         credentials.tenant_id = tenant['tenantId']
