@@ -37,7 +37,8 @@ build deploy: phony pypi_upload
 # Python Package
 
 rule python_package
-  command = python -m build --outdir ${builddir}/dist
+  # Clean out previous built versions or they get uploaded to PyPI as well
+  command = rm -rf ${builddir}/dist && python -m build --outdir ${builddir}/dist
   pool = console
 
 build python_package: phony ${builddir}/dist

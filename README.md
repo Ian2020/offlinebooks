@@ -19,9 +19,13 @@ Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
 
 Keep your accounts offline.
 
-Offlinebooks is a cmdline tool that downloads your Xero® financial accounts for
+Offlinebooks is a cmdline tool that downloads your Xero financial accounts for
 local backup. It is beta quality software and only Linux (GNOME desktop) is
-supported at present. Use with caution.
+supported at present. Use with caution. The code repository is
+at [offlinebooks](https://github.com/Ian2020/offlinebooks).
+
+We are not associated with the Xero organisation and this software is
+unsupported. See [Licensing](#licensing) for more details.
 
 ## Table of Contents
 
@@ -32,6 +36,7 @@ supported at present. Use with caution.
 * [Roadmap](#roadmap)
 * [Contributing](#contributing)
 * [Licensing](#licensing)
+* [Attribution](#attribution)
 
 ## Install
 
@@ -51,7 +56,7 @@ This will install a cmdline tool `offlinebooks`. For usage see below.
 
 ## Background
 
-I just wanted a simple way to pull my data from the Xero® API and save it locally
+I just wanted a simple way to pull my data from the Xero API and save it locally
 for backup.
 
 We save each entity as JSON in its own file, named by its unique ID (where
@@ -176,9 +181,6 @@ containing the downloaded data for you to explore (see above).
   should work.
 * We depend on `secret-tool` to retrieve the token which `xoauth` has saved,
   this is GNOME-specific.
-* I've seen the order of Journal Lines in Journals change even though the data
-  is all the same. This appears as a nuisance difference if using source
-  control. We should sort them ourselves perhaps.
 * Attachments are only re-fetched if they differ in size to avoid large
   downloads. There's a small chance that an updated attachment which is the same
   size as the original is not fetched.
@@ -258,3 +260,7 @@ version.
 This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+## Attribution
+
+"Xero" is a trademark of Xero Limited.

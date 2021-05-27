@@ -72,6 +72,15 @@ Once you've checked out the code run the following from the new source dir:
 To install offlinebooks from your source directory run: `pip install .` You should
 then be able to run your new version with `offlinebooks`.
 
+### Releasing
+
+* Update [CHANGELOG.md](CHANGELOG.md) and set [setup.cfg](setup.cfg) version
+  number.
+* Commit all outstanding changes then tag `git tag -a VERSION`. In the
+  description copy changes from the CHANGELOG being careful to remove markdown
+  headings as these are interpreted as comments by git.
+* Run `ninja pypi_upload`, ensuring `twine_repo=pypi` to upload to PyPI.
+
 ### Developer Certificate of Origin (DCO)
 
 All contributions must agree to the Developer Certificate of Origin (DCO) to

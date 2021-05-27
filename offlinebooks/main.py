@@ -56,6 +56,10 @@ class Journals:
                 more = False
             else:
                 for item in items:
+                    # Sort journal lines as their order is not guaranteed by
+                    # the API
+                    item['JournalLines'] = sorted(
+                        item['JournalLines'], key=lambda k: k['JournalLineID'])
                     yield Entity(item['JournalID'], item)
                 offset = items[-1]['JournalNumber']
 

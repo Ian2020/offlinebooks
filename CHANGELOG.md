@@ -24,7 +24,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.0.2] - 2021-05-26
+## [0.0.3](https://github.com/Ian2020/offlinebooks/releases/tag/v0.0.3) - 2021-05-27
+
+### Changed
+
+* Journal lines in journals are now sorted by ID before we save them. The API
+  brings them back in varying order and this causes nuisance changes in source
+  control otherwise.
+
+## [0.0.2](https://github.com/Ian2020/offlinebooks/releases/tag/v0.0.2) - 2021-05-26
 
 ### Added
 
