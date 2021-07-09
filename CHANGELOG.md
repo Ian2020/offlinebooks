@@ -24,7 +24,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.0.3](https://github.com/Ian2020/offlinebooks/releases/tag/v0.0.3) - 2021-05-27
+## [0.0.4](https://github.com/ian2020/offlinebooks/releases/tag/v0.0.4) - 2021-07-09
+
+### Added
+
+* Bank transactions, transfers, manual journals and payments now all saved.
+
+### Changed
+
+* Now classified under accounting topic for PyPI.
+
+## [0.0.3](https://github.com/ian2020/offlinebooks/releases/tag/v0.0.3) - 2021-05-27
 
 ### Changed
 

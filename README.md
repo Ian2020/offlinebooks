@@ -195,9 +195,6 @@ containing the downloaded data for you to explore (see above).
   * Practice Manager
   * WorkflowMax
 * Within the Accounting API we do not yet save the following:
-  * Bank statements
-  * Bank transactions
-  * Branch transfers
   * Batch Payments
   * Budgets
   * Contact Groups
@@ -206,9 +203,7 @@ containing the downloaded data for you to explore (see above).
   * History and Notes
   * Invoice Reminders
   * Linked Transactions
-  * Manual Journals
   * Payment Services
-  * Payments
   * Prepayments
   * Purchase Orders
   * Quotes

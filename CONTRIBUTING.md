@@ -69,16 +69,19 @@ Once you've checked out the code run the following from the new source dir:
   where you want build artifacts to end up. The default dir is `build`.
 * Run `ninja` to build the project.
 
-To install offlinebooks from your source directory run: `pip install .` You should
-then be able to run your new version with `offlinebooks`.
+To install offlinebooks from your source directory run: `pip install .`, this
+installs from source and does not require any building. You should then be able
+to run your new version with `offlinebooks`.
 
 ### Releasing
 
 * Update [CHANGELOG.md](CHANGELOG.md) and set [setup.cfg](setup.cfg) version
   number.
-* Commit all outstanding changes then tag `git tag -a VERSION`. In the
-  description copy changes from the CHANGELOG being careful to remove markdown
-  headings as these are interpreted as comments by git.
+* Commit all outstanding changes with a commit msg prepended with the VERSION.
+  Then tag `git tag -a VERSION`. In the description copy changes from the
+  CHANGELOG being careful to remove markdown headings as these are interpreted
+  as comments by git. See existing tags for guidance. Remember to git push
+  changes and tags.
 * Run `ninja pypi_upload`, ensuring `twine_repo=pypi` to upload to PyPI.
 
 ### Developer Certificate of Origin (DCO)

@@ -35,6 +35,34 @@ from xero import Xero
 Entity = namedtuple("Entity", "id data")
 
 
+class BankTransactions:
+    def __init__(self, xero):
+        self.name = "banktransactions"
+        self.fetch = lambda: paged_generator(xero.banktransactions,
+                                             "BankTransactionID")
+
+
+class BankTransfers:
+    def __init__(self, xero):
+        self.name = "banktransfers"
+        self.fetch = lambda: all_generator(xero.banktransfers,
+                                           "BankTransferID")
+
+
+class ManualJournals:
+    def __init__(self, xero):
+        self.name = "manualjournals"
+        self.fetch = lambda: paged_generator(xero.manualjournals,
+                                             "ManualJournalID")
+
+
+class Payments:
+    def __init__(self, xero):
+        self.name = "payments"
+        self.fetch = lambda: paged_generator(xero.payments,
+                                             "PaymentID")
+
+
 class Contacts:
     def __init__(self, xero):
         self.name = "contacts"
@@ -217,7 +245,11 @@ def main():
         if not os.path.isdir(tenant_sym):
             os.symlink(repo_tenantId, tenant_sym)
 
-        fetchers = [Contacts(xero),
+        fetchers = [BankTransactions(xero),
+                    BankTransfers(xero),
+                    ManualJournals(xero),
+                    Payments(xero),
+                    Contacts(xero),
                     Journals(xero),
                     Invoices(xero),
                     Accounts(xero),
