@@ -73,6 +73,26 @@ To install offlinebooks from your source directory run: `pip install .`, this
 installs from source and does not require any building. You should then be able
 to run your new version with `offlinebooks`.
 
+### Adding a new Entity
+
+To add a new entity we need the following details from the [API
+docs](https://developer.xero.com/documentation/api):
+
+* You'll need the name of its Xero identifier field. For example for Contacts
+  this is `ContactID`. This is used for the filename which will store the
+  entities.
+* Is it paged? This may show up as a `page` parameter for the entity. If so use
+  the `paged_generator` lambda, if not use `all_generator`.
+* Are there any additional parameters to set to retrieve all data? For example
+  for Contacts you need to pass the optional parameter `includeArchived=true` to
+  get archived contacts. Pass this to the generator lambda as extra args.
+* Don't worry if it has attachments or not - we will grab them if they are
+  found automatically.
+
+Once armed with this info it should be obvious how to add a new entity into the
+code if you look at the existing ones. For an example of how its done see
+[this commit](https://github.com/Ian2020/offlinebooks/commit/1eec3f391f5c5edfbfdf781ba281822a09dabcfd).
+
 ### Releasing
 
 * Update [CHANGELOG.md](CHANGELOG.md) and set [setup.cfg](setup.cfg) version

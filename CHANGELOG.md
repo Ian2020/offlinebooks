@@ -24,6 +24,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.5](https://github.com/ian2020/offlinebooks/releases/tag/v0.0.5) - 2021-11-10
+
+### Added
+
+* Update dependencies - latest pyxero 0.9.3 fixes some important bugs in
+  particular:
+  [Release v0.9.3 · freakboy3742/pyxero](https://github.com/freakboy3742/pyxero/releases/tag/v0.9.3)
+* Instructions on adding new entities and other minor documentation.
+
 ## [0.0.4](https://github.com/ian2020/offlinebooks/releases/tag/v0.0.4) - 2021-07-09
 
 ### Added

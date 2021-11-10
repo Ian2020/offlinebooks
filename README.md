@@ -115,17 +115,21 @@ $XDG_DATA_HOME/offlinebooks/
 
 Data covered so far:
 
-* Contacts
-* Journals
-* Invoices
 * Accounts
+* Bank Transactions
+* Bank Transfers
+* Branding theme
+* Contacts
 * Currencies
+* Invoices
 * Items
+* Journals
+* Manual Journals
 * Organisations, EXCEPT:
   * Organisation actions
   * CIS Settings (UK)
+* Payments
 * Users
-* Branding theme
 
 ## Usage
 
@@ -179,6 +183,9 @@ containing the downloaded data for you to explore (see above).
 * Intermittent exception 'oauthlib.oauth2.rfc6749.errors.InvalidGrantError' -
   not sure what causes this. If you do a `xoauth connect` then run again it
   should work.
+* A long delay then a failure with exception
+  `xero.exceptions.XeroExceptionUnknown: None` whilst calling func.filter with
+  paging. If you `xoauth connect` then run again it works.
 * We depend on `secret-tool` to retrieve the token which `xoauth` has saved,
   this is GNOME-specific.
 * Attachments are only re-fetched if they differ in size to avoid large
@@ -217,6 +224,7 @@ containing the downloaded data for you to explore (see above).
 In vague priority order:
 
 * Download remaining data not yet supported from Accounting API above.
+  * How are VAT returns covered by the API?
 * Allow user to limit tenant(s). Introduce config file in XDG friendly location
 * Allow user to specify repo path also
 * We should report at the end on API usage if requested: 'Each API response you
