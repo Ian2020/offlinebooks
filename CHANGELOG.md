@@ -24,6 +24,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.6](https://github.com/ian2020/offlinebooks/releases/tag/v0.0.6) - 2021-12-14
+
+### Fixed
+
+* Now we can cope if Xero API responds that we have breached the calls per minute
+  limit. We back off for a time interval as supplied by them and then retry. We
+  output this event to the console so users can see the delay.
+
 ## [0.0.5](https://github.com/ian2020/offlinebooks/releases/tag/v0.0.5) - 2021-11-10
 
 ### Added
