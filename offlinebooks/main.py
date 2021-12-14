@@ -24,15 +24,60 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import json
+import logging
 import os
 import subprocess
 from collections import namedtuple
 from pathvalidate import sanitize_filename
+from tenacity import (retry, stop_after_delay, stop_after_attempt)
 from xero.auth import OAuth2Credentials
 from xero import Xero
+from xero.exceptions import XeroRateLimitExceeded
 
 
 Entity = namedtuple("Entity", "id data")
+
+# #########################
+# TENACITY CUSTOM CALLBACKS
+# #########################
+
+
+def retry_if_minute_rate_limit_exceeded(retry_state):
+    # We seem to get called even if method did not fail, ignore
+    if not retry_state.outcome.failed:
+        return False
+    return \
+        (isinstance(retry_state.outcome.exception(), XeroRateLimitExceeded)
+         and
+         retry_state.outcome.exception().response.headers.get(
+             "X-Rate-Limit-Problem") == 'minute')
+
+
+def wait_till_api_says_retry(retry_state, default=60.0) -> float:
+    if isinstance(retry_state.outcome.exception(), XeroRateLimitExceeded):
+        default = \
+                float(
+                    retry_state.outcome.exception().response.headers.get(
+                        "Retry-After"))
+    return default
+
+
+def before_sleep_log(retry_state):
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Xero API rate-limit exceeded for calls per minute, "
+                   f"will pause for {retry_state.next_action.sleep}s")
+    if isinstance(retry_state.outcome.exception(), XeroRateLimitExceeded):
+        headers = retry_state.outcome.exception().response.headers
+        logger.warning("API reported the following remaining limits:")
+        logger.warning(
+            f"  app minute : {headers.get('X-AppMinLimit-Remaining')}")
+        logger.warning(
+            f"  daily      : {headers.get('X-DayLimit-Remaining')}")
+
+
+# ########
+# FETCHERS
+# ########
 
 
 class BankTransactions:
@@ -75,6 +120,10 @@ class Journals:
         self.name = "journals"
         self.xero = xero
 
+    @retry(retry=retry_if_minute_rate_limit_exceeded,
+           stop=stop_after_delay(90) | stop_after_attempt(5),
+           before_sleep=before_sleep_log,
+           wait=wait_till_api_says_retry)
     def fetch(self):
         more = True
         offset = 0
@@ -163,6 +212,10 @@ def get_client_id():
     return xoauth['offlinebooks']['ClientId']
 
 
+@retry(retry=retry_if_minute_rate_limit_exceeded,
+       stop=stop_after_delay(90) | stop_after_attempt(5),
+       before_sleep=before_sleep_log,
+       wait=wait_till_api_says_retry)
 def paged_generator(func, id_field, **kwargs):
     more = True
     page_no = 1
@@ -176,6 +229,10 @@ def paged_generator(func, id_field, **kwargs):
             page_no += 1
 
 
+@retry(retry=retry_if_minute_rate_limit_exceeded,
+       stop=stop_after_delay(90) | stop_after_attempt(5),
+       before_sleep=before_sleep_log,
+       wait=wait_till_api_says_retry)
 def all_generator(func, id_field):
     items = func.all()
     for item in items:
@@ -191,6 +248,10 @@ def get_repo():
     return os.path.join(data_home, "offlinebooks")
 
 
+@retry(retry=retry_if_minute_rate_limit_exceeded,
+       stop=stop_after_delay(90) | stop_after_attempt(5),
+       before_sleep=before_sleep_log,
+       wait=wait_till_api_says_retry)
 def process_attachments(xero, entity, entity_attachments_dir):
     attachmentContainer = xero.invoices.get_attachments(entity.id)
     for attach in attachmentContainer['Attachments']:

@@ -173,6 +173,17 @@ If it completes without error you'll find a new dir at
 `$XDG_DATA_HOME/offlinebooks` (probably `~/.local/share/offlinebooks`)
 containing the downloaded data for you to explore (see above).
 
+If it hits the Xero API minute rate-limit it'll pause for a time interval (as
+supplied by the API) before continuing the run. You'll see some output to
+indicate this, for example:
+
+```text
+Xero API rate-limit exceeded for calls per minute, will pause for 43.0s
+API reported the following remaining limits:
+  app minute : 9911
+  daily      : 2718
+```
+
 ## Troubleshooting
 
 * `No such file or directory: '~/.xoauth/xoauth.json'` - have you run
@@ -230,13 +241,16 @@ In vague priority order:
 * We should report at the end on API usage if requested: 'Each API response you
   receive will include the X-DayLimit-Remaining, X-MinLimit-Remaining and
   X-AppMinLimit-Remaining headers telling you the number of remaining against
-  each limit.'
-* Limit API calls to ensure we stay within limits, the important ones per tenant:
-  * 60 calls a minute
-  * 5 concurrent calls
+  each limit.' This can be got from the final response we receive.
 * Fetch in parallel
 * We assume journals start at 1, i.e. setting offset=0 which means querying
   JournalNumber>0. Is this definite?
+* Our use of tenacity and handling API limits:
+  * We repeat the retry decorator on every function containing an API call.
+    Better to remove this duplication.
+  * It would be better not to reach into the response and get headers,
+    perhaps pyxero's XeroRateLimitExceeded exception could hold the data
+    instead.
 
 ## Contributing
 
