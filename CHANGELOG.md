@@ -24,6 +24,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.7](https://github.com/ian2020/offlinebooks/releases/tag/v0.0.7) - 2022-03-24
+
+### Added
+
+To try and track down what's causing the occasional XeroRateLimitExceeded
+exception we sometimes see the following measures were added:
+
+* Extra logging if we reach the limit of our retries against the API.
+* Add a one second buffer to the wait time we're given by the API.
+
 ## [0.0.6](https://github.com/ian2020/offlinebooks/releases/tag/v0.0.6) - 2021-12-14
 
 ### Fixed

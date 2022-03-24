@@ -42,6 +42,18 @@ Entity = namedtuple("Entity", "id data")
 # #########################
 
 
+# [Re-raising RetryError from retry_error_callback · Issue #296 · jd/tenacity]
+# (https://github.com/jd/tenacity/issues/296)
+def retry_on_error(retry_state):
+    logger = logging.getLogger(__name__)
+    logger.exception(
+        "Max retries exceeded",
+        extra={"stats": retry_state.retry_object.statistics},
+    )
+    raise retry_state.retry_object.retry_error_cls(retry_state.outcome) \
+          from retry_state.outcome.exception()
+
+
 def retry_if_minute_rate_limit_exceeded(retry_state):
     # We seem to get called even if method did not fail, ignore
     if not retry_state.outcome.failed:
@@ -53,13 +65,15 @@ def retry_if_minute_rate_limit_exceeded(retry_state):
              "X-Rate-Limit-Problem") == 'minute')
 
 
-def wait_till_api_says_retry(retry_state, default=60.0) -> float:
+def wait_till_api_says_retry(retry_state) -> float:
+    default = 60.0
     if isinstance(retry_state.outcome.exception(), XeroRateLimitExceeded):
         default = \
                 float(
                     retry_state.outcome.exception().response.headers.get(
                         "Retry-After"))
-    return default
+    # Add a tiny buffer just in case
+    return default + 1
 
 
 def before_sleep_log(retry_state):
@@ -121,6 +135,7 @@ class Journals:
         self.xero = xero
 
     @retry(retry=retry_if_minute_rate_limit_exceeded,
+           retry_error_callback=retry_on_error,
            stop=stop_after_delay(90) | stop_after_attempt(5),
            before_sleep=before_sleep_log,
            wait=wait_till_api_says_retry)
@@ -213,6 +228,7 @@ def get_client_id():
 
 
 @retry(retry=retry_if_minute_rate_limit_exceeded,
+       retry_error_callback=retry_on_error,
        stop=stop_after_delay(90) | stop_after_attempt(5),
        before_sleep=before_sleep_log,
        wait=wait_till_api_says_retry)
@@ -230,6 +246,7 @@ def paged_generator(func, id_field, **kwargs):
 
 
 @retry(retry=retry_if_minute_rate_limit_exceeded,
+       retry_error_callback=retry_on_error,
        stop=stop_after_delay(90) | stop_after_attempt(5),
        before_sleep=before_sleep_log,
        wait=wait_till_api_says_retry)
@@ -249,6 +266,7 @@ def get_repo():
 
 
 @retry(retry=retry_if_minute_rate_limit_exceeded,
+       retry_error_callback=retry_on_error,
        stop=stop_after_delay(90) | stop_after_attempt(5),
        before_sleep=before_sleep_log,
        wait=wait_till_api_says_retry)

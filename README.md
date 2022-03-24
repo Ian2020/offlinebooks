@@ -191,6 +191,30 @@ API reported the following remaining limits:
 
 ## Known Issues
 
+* Still get API rate-limits exceeded sometimes:
+
+```bash
+Xero API rate-limit exceeded for calls per minute, will pause for 14.0s
+API reported the following remaining limits:
+  app minute : 9984
+  daily      : 4794
+Traceback (most recent call last):
+  File "/home/user/.local/bin/offlinebooks", line 8, in <module>
+    sys.exit(main())
+  File "/home/user/.local/lib/python3.9/site-packages/offlinebooks/main.py", line 329, in main
+    for entity in fetcher.fetch():
+  File "/home/user/.local/lib/python3.9/site-packages/offlinebooks/main.py", line 237, in all_generator
+    items = func.all()
+  File "/home/user/.local/lib/python3.9/site-packages/xero/basemanager.py", line 264, in wrapper
+    raise XeroRateLimitExceeded(response, payload)
+xero.exceptions.XeroRateLimitExceeded: please wait before retrying the xero api,the limit exceeded is: minute
+```
+
+  This is hard to reproduce. I have added (24th Mar '22) an extra second to our
+  wait time in case of rounding issues though I have seen this exception occur
+  before we decide to wait. Also added extra logging in case we are reaching
+  our retry stop limit without realising.
+
 * Intermittent exception 'oauthlib.oauth2.rfc6749.errors.InvalidGrantError' -
   not sure what causes this. If you do a `xoauth connect` then run again it
   should work.
@@ -212,7 +236,8 @@ API reported the following remaining limits:
   * Xero HQ
   * Practice Manager
   * WorkflowMax
-* Within the Accounting API we do not yet save the following:
+* Within the Accounting API we do not yet save the following (for some we also
+  show in parenthesis where these are found in the Xero web GUI):
   * Batch Payments
   * Budgets
   * Contact Groups
@@ -225,10 +250,9 @@ API reported the following remaining limits:
   * Prepayments
   * Purchase Orders
   * Quotes
-  * Repeating Invoices
-  * Reports
-  * Tracking Categories
-  * Types
+  * Repeating Invoices (Business-Invoices-Repeating)
+  * Reports (Accounting-Reports)
+  * Tracking Categories (Accounting-Advanced-Tracking Categories)
 
 ## Roadmap
 
