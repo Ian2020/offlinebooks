@@ -55,9 +55,7 @@ def retry_on_error(retry_state):
 
 
 def retry_if_minute_rate_limit_exceeded(retry_state):
-    # We seem to get called even if method did not fail, ignore
-    if not retry_state.outcome.failed:
-        return False
+    # This gets called on every method return and/or exception
     return \
         (isinstance(retry_state.outcome.exception(), XeroRateLimitExceeded)
          and
@@ -134,11 +132,6 @@ class Journals:
         self.name = "journals"
         self.xero = xero
 
-    @retry(retry=retry_if_minute_rate_limit_exceeded,
-           retry_error_callback=retry_on_error,
-           stop=stop_after_delay(90) | stop_after_attempt(5),
-           before_sleep=before_sleep_log,
-           wait=wait_till_api_says_retry)
     def fetch(self):
         more = True
         offset = 0
@@ -227,11 +220,6 @@ def get_client_id():
     return xoauth['offlinebooks']['ClientId']
 
 
-@retry(retry=retry_if_minute_rate_limit_exceeded,
-       retry_error_callback=retry_on_error,
-       stop=stop_after_delay(90) | stop_after_attempt(5),
-       before_sleep=before_sleep_log,
-       wait=wait_till_api_says_retry)
 def paged_generator(func, id_field, **kwargs):
     more = True
     page_no = 1
@@ -245,11 +233,6 @@ def paged_generator(func, id_field, **kwargs):
             page_no += 1
 
 
-@retry(retry=retry_if_minute_rate_limit_exceeded,
-       retry_error_callback=retry_on_error,
-       stop=stop_after_delay(90) | stop_after_attempt(5),
-       before_sleep=before_sleep_log,
-       wait=wait_till_api_says_retry)
 def all_generator(func, id_field):
     items = func.all()
     for item in items:
@@ -289,6 +272,19 @@ def process_attachments(xero, entity, entity_attachments_dir):
             with open(attach_filename, "wb") as f:
                 # TODO: This does not seem robust, to fetch by filename
                 xero.invoices.get_attachment(entity.id, attach['FileName'], f)
+
+
+@retry(retry=retry_if_minute_rate_limit_exceeded,
+       retry_error_callback=retry_on_error,
+       stop=stop_after_delay(90) | stop_after_attempt(5),
+       before_sleep=before_sleep_log,
+       wait=wait_till_api_says_retry)
+def retry_generator(func):
+    # Tenacity cannot work with generators so we must apply it to functions
+    # that call the generators
+    # https://stackoverflow.com/a/61571713/28170
+    results = list(func())
+    return results
 
 
 def main():
@@ -344,7 +340,7 @@ def main():
             save_dir = os.path.join(repo_tenantId, fetcher.name)
             os.makedirs(save_dir, exist_ok=True)
 
-            for entity in fetcher.fetch():
+            for entity in retry_generator(fetcher.fetch):
                 safe_entity_id = sanitize_filename(entity.id)
                 entity_path = os.path.join(
                                     save_dir, f"{safe_entity_id}.json")

@@ -24,6 +24,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.8](https://github.com/ian2020/offlinebooks/releases/tag/v0.0.8) - 2022-07-06
+
+### Fixed
+
+* Possible fix for intermittent XeroRateLimitExceeded exceptions.
+  * Tenacity does not work with generators, we have to apply it to functions
+    that call the generators:
+    ["Retry" from tenacity module doesn't work with a generator](https://stackoverflow.com/a/61571713/28170)
+  * Tenacity can say in its `retry_state` that a method threw an exception but
+    still give it an outcome of 'finished'. We were filtering on 'failed' only
+    which meant we were ignoring some API exceptions and letting them bubble
+    out. Now we just focus on whether a method had an exception regardless of
+    the outcome state.
+
+### Added
+
+* Set changelog and bug tracker URLs in PyPI.
+
 ## [0.0.7](https://github.com/ian2020/offlinebooks/releases/tag/v0.0.7) - 2022-03-24
 
 ### Added

@@ -191,7 +191,7 @@ API reported the following remaining limits:
 
 ## Known Issues
 
-* Still get API rate-limits exceeded sometimes:
+* Possibly fixed since v0.0.8: still get API rate-limits exceeded sometimes:
 
 ```bash
 Xero API rate-limit exceeded for calls per minute, will pause for 14.0s
