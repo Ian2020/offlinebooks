@@ -103,6 +103,7 @@ code if you look at the existing ones. For an example of how its done see
   as comments by git. See existing tags for guidance. Remember to git push
   changes and tags.
 * Run `ninja pypi_upload`, ensuring `twine_repo=pypi` to upload to PyPI.
+  The build package is a prereq: `pip install build`.
 
 ### Developer Certificate of Origin (DCO)
 
